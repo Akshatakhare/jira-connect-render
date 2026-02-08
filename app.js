@@ -7,26 +7,64 @@ app.use(bodyParser.json());
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || "http://localhost:3000";
 
+// app.get("/atlassian-connect.json", (req, res) => {
+//   res.json({
+//     key: "connect-render-demo",
+//     name: "Connect Render Demo",
+//     baseUrl: BASE_URL,
+//     apiVersion: 1,
+//     authentication: { type: "jwt" },
+//     lifecycle: {
+//       installed: "/installed"
+//     },
+//     modules: {
+//       "jira:issuePanel": [
+//         {
+//           key: "demo-issue-panel",
+//           name: { value: "Render Panel" },
+//           url: "/panel",
+//           location: "atl.jira.view.issue.right.context"
+//         }
+//       ]
+//     },
+//     scopes: ["read:jira-work"]
+//   });
+// });
+
 app.get("/atlassian-connect.json", (req, res) => {
   res.json({
     key: "connect-render-demo",
     name: "Connect Render Demo",
+    description: "Demo Jira Connect app deployed on Render",
     baseUrl: BASE_URL,
     apiVersion: 1,
-    authentication: { type: "jwt" },
+
+    vendor: {
+      name: "Akshata",
+      url: "https://github.com/Akshatakhare"
+    },
+
+    authentication: {
+      type: "jwt"
+    },
+
     lifecycle: {
       installed: "/installed"
     },
+
     modules: {
       "jira:issuePanel": [
         {
           key: "demo-issue-panel",
-          name: { value: "Render Panel" },
+          name: {
+            value: "Render Panel"
+          },
           url: "/panel",
           location: "atl.jira.view.issue.right.context"
         }
       ]
     },
+
     scopes: ["read:jira-work"]
   });
 });
