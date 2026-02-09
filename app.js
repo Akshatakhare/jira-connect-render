@@ -11,6 +11,22 @@ const pool = new Pool({
   ssl: { rejectUnauthorized: false }
 });
 
+// Auto-create tenants table if not exists
+(async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS tenants (
+        client_key TEXT PRIMARY KEY,
+        shared_secret TEXT NOT NULL,
+        base_url TEXT NOT NULL
+      );
+    `);
+    console.log("✅ tenants table ready");
+  } catch (err) {
+    console.error("❌ Failed to create tenants table", err);
+  }
+})();
+
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || "https://jira-connect-render.onrender.com";
 
