@@ -33,22 +33,43 @@ const BASE_URL = process.env.BASE_URL || "https://jira-connect-render.onrender.c
 // 1. The Descriptor
 app.get("/atlassian-connect.json", (req, res) => {
   res.json({
-    key: "connect-render-demo-v2", // Changed key to force Jira to refresh
+    key: "connect-render-demo-v3",   // NEW key (important)
     name: "Connect Render Demo",
+    description: "Demo Jira Connect app deployed on Render",
+
     baseUrl: BASE_URL,
-    authentication: { type: "jwt" },
-    lifecycle: { installed: "/installed" },
-    modules: {
-      "jira:issuePanel": [{
-        key: "demo-issue-panel",
-        name: { value: "Render Panel" },
-        url: "/panel",
-        location: "atl.jira.view.issue.right.context"
-      }]
+    apiVersion: 1,                   // ✅ REQUIRED
+
+    vendor: {
+      name: "Akshata",
+      url: "https://github.com/Akshatakhare"
     },
+
+    authentication: {
+      type: "jwt"
+    },
+
+    lifecycle: {
+      installed: "/installed"
+    },
+
+    modules: {
+      "jira:issuePanel": [
+        {
+          key: "demo-issue-panel",
+          name: {
+            value: "Render Panel"
+          },
+          url: "/panel",
+          location: "atl.jira.view.issue.right.context"
+        }
+      ]
+    },
+
     scopes: ["read:jira-work"]
   });
 });
+
 
 // 2. The critical "Handshake" route
 app.post("/installed", async (req, res) => {
