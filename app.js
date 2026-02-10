@@ -1,44 +1,25 @@
 const express = require("express");
 const bodyParser = require("body-parser");
-const { Pool } = require('pg'); // Add this
 
 const app = express();
 app.use(bodyParser.json());
 
-// Setup Postgres connection
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false }
-});
-
-// Auto-create tenants table if not exists
-(async () => {
-  try {
-    await pool.query(`
-      CREATE TABLE IF NOT EXISTS tenants (
-        client_key TEXT PRIMARY KEY,
-        shared_secret TEXT NOT NULL,
-        base_url TEXT NOT NULL
-      );
-    `);
-    console.log("✅ tenants table ready");
-  } catch (err) {
-    console.error("❌ Failed to create tenants table", err);
-  }
-})();
-
 const PORT = process.env.PORT || 3000;
 const BASE_URL = process.env.BASE_URL || "https://jira-connect-render.onrender.com";
 
-// 1. The Descriptor
+/**
+ * 1️⃣ Atlassian Connect Descriptor
+ */
 app.get("/atlassian-connect.json", (req, res) => {
+  res.setHeader("Content-Type", "application/json");
+
   res.json({
-    key: "connect-render-demo-v3",   // NEW key (important)
+    key: "connect-render-demo-v4", // ⚠️ NEW KEY (force Jira refresh)
     name: "Connect Render Demo",
     description: "Demo Jira Connect app deployed on Render",
 
     baseUrl: BASE_URL,
-    apiVersion: 1,                   // ✅ REQUIRED
+    apiVersion: 1,
 
     vendor: {
       name: "Akshata",
@@ -70,27 +51,27 @@ app.get("/atlassian-connect.json", (req, res) => {
   });
 });
 
+/**
+ * 2️⃣ Installation Handshake (TEMP: NO DB)
+ */
+app.post("/installed", (req, res) => {
+  console.log("✅ /installed called");
+  console.log("Payload from Jira:", req.body);
 
-// 2. The critical "Handshake" route
-app.post("/installed", async (req, res) => {
-  const { clientKey, sharedSecret, baseUrl } = req.body;
-  
-  try {
-    // You MUST save these to a database
-    await pool.query(
-      'INSERT INTO tenants (client_key, shared_secret, base_url) VALUES ($1, $2, $3) ON CONFLICT (client_key) DO UPDATE SET shared_secret = $2',
-      [clientKey, sharedSecret, baseUrl]
-    );
-    console.log(`Saved tenant: ${clientKey}`);
-    res.status(204).send(); // 204 No Content is preferred by Atlassian
-  } catch (err) {
-    console.error("Database error", err);
-    res.sendStatus(500);
-  }
+  // IMPORTANT: Always respond 204
+  res.status(204).send();
 });
 
+/**
+ * 3️⃣ Panel UI
+ */
 app.get("/panel", (req, res) => {
-  res.send("<h2>✅ Jira Connect app is running and authenticated!</h2>");
+  res.send("<h2>✅ Jira Connect app installed successfully!</h2>");
 });
 
-app.listen(PORT, () => console.log(`Server running on ${PORT}`));
+/**
+ * 4️⃣ Start server
+ */
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+});
